@@ -1,2 +1,2 @@
 # Project-Mallika
-SQL Project
+SQL Capstone Project
