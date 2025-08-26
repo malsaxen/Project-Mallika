@@ -1,0 +1,52 @@
+Create or connect to sales DB if needed
+-- CREATE DATABASE sales_db;
+-- \c sales_db
+
+DROP TABLE IF EXISTS sales_sample;
+
+CREATE TABLE sales_sample (
+  product_id INT,
+  region VARCHAR(50),
+  sale_date DATE,
+  sales_amount NUMERIC(12,2)
+);
+
+-- Insert 10 sample records
+INSERT INTO sales_sample (product_id, region, sale_date, sales_amount) VALUES
+(101,'East','2025-06-01',1500.00),
+(101,'East','2025-06-15',1200.00),
+(102,'West','2025-06-10',2000.00),
+(103,'North','2025-06-05',800.00),
+(101,'West','2025-06-20',500.00),
+(104,'South','2025-06-02',2200.00),
+(102,'East','2025-06-25',900.00),
+(103,'South','2025-06-30',450.00),
+(104,'West','2025-06-12',700.00),
+(102,'North','2025-06-18',1100.00);
+
+-- OLAP-like queries (Postgres supports GROUP BY ROLLUP and CUBE in recent versions)
+
+-- a) Drill down: sales by region then product
+-- SELECT region, product_id, SUM(sales_amount) AS total_sales
+-- FROM sales_sample
+-- GROUP BY region, product_id
+-- ORDER BY region, total_sales DESC;
+
+-- b) Rollup: product -> region
+-- SELECT product_id, region, SUM(sales_amount) AS total_sales
+-- FROM sales_sample
+-- GROUP BY ROLLUP (product_id, region)
+-- ORDER BY product_id NULLS LAST, region NULLS LAST;
+
+-- c) Cube: product, region, date (example using date_trunc month)
+-- SELECT product_id, region, date_trunc('month', sale_date) AS month, SUM(sales_amount) AS total_sales
+-- FROM sales_sample
+-- GROUP BY CUBE (product_id, region, date_trunc('month', sale_date))
+-- ORDER BY product_id, region, month;
+
+-- d) Slice: filter by region or date range (region = 'East')
+-- SELECT * FROM sales_sample WHERE region = 'East';
+-- SELECT * FROM sales_sample WHERE sale_date BETWEEN '2025-06-01' AND '2025-06-15';
+
+-- e) Dice: multiple criteria (product IN (101,102) AND region IN ('East','West'))
+-- SELECT * FROM sales_sample WHERE product_id IN (101,102) AND region IN ('East','West');

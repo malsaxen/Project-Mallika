@@ -1,0 +1,61 @@
+CREATE DATABASE student_database;
+-- \c student_database
+
+DROP TABLE IF EXISTS student_table;
+
+CREATE TABLE student_table (
+  student_id SERIAL PRIMARY KEY,
+  stu_name TEXT NOT NULL,
+  department TEXT,
+  email_id TEXT,
+  phone_no VARCHAR(20),
+  address TEXT,
+  date_of_birth DATE,
+  gender TEXT CHECK (gender IN ('Male','Female','Other')),
+  major TEXT,
+  gpa NUMERIC(3,2),
+  grade TEXT
+);
+
+-- Insert 10 sample records
+INSERT INTO student_table (stu_name, department, email_id, phone_no, address, date_of_birth, gender, major, gpa, grade) VALUES
+('Aditya Roy','Computer Science','aditya.r@example.com','+91-9000000001','Kanpur','1998-06-12','Male','CS',8.5,'A'),
+('Nisha Verma','Biotech','nisha.v@example.com','+91-9000000002','Lucknow','1999-09-23','Female','Biotech',7.2,'B'),
+('Ramesh Kumar','Mechanical','ramesh.k@example.com','+91-9000000003','Noida','1997-01-11','Male','Mechanical',4.6,'C'),
+('Pooja Singh','Electrical','pooja.s@example.com','+91-9000000004','Delhi','2000-02-01','Female','EE',6.8,'B'),
+('Karan Patel','IT','karan.p@example.com','+91-9000000005','Ahmedabad','1998-12-05','Male','IT',9.1,'A'),
+('Meera Joshi','CS','meera.j@example.com','+91-9000000006','Mumbai','1999-04-20','Female','CS',5.2,'C'),
+('Vivek Rao','Biotech','vivek.r@example.com','+91-9000000007','Pune','2001-07-07','Male','Biotech',3.9,'C'),
+('Sana Ali','Management','sana.a@example.com','+91-9000000008','Hyderabad','1998-08-15','Female','MBA',7.9,'B'),
+('Mohit Sharma','CS','mohit.s@example.com','+91-9000000009','Chennai','1996-11-30','Male','CS',8.8,'A'),
+('Ritu Kapoor','IT','ritu.k@example.com','+91-9000000010','Kolkata','2000-10-10','Female','IT',4.4,'C');
+
+-- Queries:
+-- 3. Retrieve all students sorted descending by grade (note: grade is text A,B,C; to sort by grade we can map to numeric or sort alphabetically)
+-- Example: ORDER BY grade ASC will put A before B; to sort descending by performance (A best) use ORDER BY grade ASC
+-- SELECT * FROM student_table ORDER BY grade ASC;
+
+-- 4. Query for male students
+-- SELECT * FROM student_table WHERE gender = 'Male';
+
+-- 5. Students with GPA less than 5.0
+-- SELECT * FROM student_table WHERE gpa < 5.0;
+
+-- 6. Update student email and grade for a specific student_id, e.g., id=3
+-- UPDATE student_table SET email_id = 'ramesh.k_new@example.com', grade = 'B' WHERE student_id = 3;
+
+-- 7. Query for students with grade 'B'
+-- SELECT stu_name, date_of_birth, gpa, grade FROM student_table WHERE grade = 'B';
+
+-- 8. Grouping and Calculation: average GPA by department and gender
+-- SELECT department, gender, ROUND(AVG(gpa)::numeric,2) AS avg_gpa
+-- FROM student_table
+-- GROUP BY department, gender
+-- ORDER BY department, gender;
+
+-- 9. Rename table student_table to student_info
+-- ALTER TABLE student_table RENAME TO student_info;
+
+-- 10. Retrieve student with highest GPA
+-- SELECT stu_name, gpa FROM student_table WHERE gpa = (SELECT MAX(gpa) FROM student_table);
+

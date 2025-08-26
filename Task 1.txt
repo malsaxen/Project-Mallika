@@ -1,0 +1,107 @@
+-- CREATE DATABASE academic_management;
+-- \c academic_management   -- connect to DB in psql
+
+-- Drop tables if exist (safe to run repeatedly)
+DROP TABLE IF EXISTS EnrollmentInfo;
+DROP TABLE IF EXISTS CoursesInfo;
+DROP TABLE IF EXISTS StudentInfo;
+
+-- 1. Create tables
+CREATE TABLE StudentInfo (
+  STU_ID SERIAL PRIMARY KEY,
+  STU_NAME TEXT NOT NULL,
+  DOB DATE,
+  PHONE_NO VARCHAR(20),
+  EMAIL_ID TEXT,
+  ADDRESS TEXT
+);
+
+CREATE TABLE CoursesInfo (
+  COURSE_ID SERIAL PRIMARY KEY,
+  COURSE_NAME TEXT NOT NULL,
+  COURSE_INSTRUCTOR_NAME TEXT
+);
+
+CREATE TABLE EnrollmentInfo (
+  ENROLLMENT_ID SERIAL PRIMARY KEY,
+  STU_ID INT NOT NULL,
+  COURSE_ID INT NOT NULL,
+  ENROLL_STATUS TEXT CHECK (ENROLL_STATUS IN ('Enrolled','Not Enrolled')) DEFAULT 'Enrolled',
+  FOREIGN KEY (STU_ID) REFERENCES StudentInfo(STU_ID) ON DELETE CASCADE,
+  FOREIGN KEY (COURSE_ID) REFERENCES CoursesInfo(COURSE_ID) ON DELETE CASCADE
+);
+
+-- 2. Insert sample data
+INSERT INTO StudentInfo (STU_NAME, DOB, PHONE_NO, EMAIL_ID, ADDRESS) VALUES
+('Aisha Khan','2000-05-12','+91-9876500011','aisha.k@example.com','Kanpur'),
+('Rohit Gupta','1999-11-02','+91-9876500022','rohit.g@example.com','Lucknow'),
+('Sneha Mehta','2001-03-23','+91-9876500033','sneha.m@example.com','Delhi'),
+('Vikram Singh','1998-07-30','+91-9876500044','vikram.s@example.com','Noida'),
+('Priya Sharma','2000-01-15','+91-9876500055','priya.s@example.com','Mumbai');
+
+INSERT INTO CoursesInfo (COURSE_NAME, COURSE_INSTRUCTOR_NAME) VALUES
+('Intro to Databases','Dr. Meera Joshi'),
+('SQL Basics','Mr. Arun Rao'),
+('Data Modeling','Dr. Kavita Patel'),
+('Web Development','Ms. Rina Das');
+
+-- Insert enrollments (some students in multiple courses)
+INSERT INTO EnrollmentInfo (STU_ID, COURSE_ID, ENROLL_STATUS) VALUES
+(1,1,'Enrolled'),
+(1,2,'Enrolled'),
+(2,2,'Enrolled'),
+(3,1,'Enrolled'),
+(3,3,'Enrolled'),
+(4,4,'Enrolled'),
+(5,2,'Not Enrolled');
+
+-- 3) Retrieve queries (examples to run and screenshot results)
+-- a) Retrieve student details (name, contact, enrollment status)
+-- SELECT s.stu_id, s.stu_name, s.phone_no, s.email_id, e.enroll_status
+-- FROM StudentInfo s
+-- LEFT JOIN EnrollmentInfo e ON s.stu_id = e.stu_id;
+
+-- b) List of courses a specific student is enrolled in (example student id = 1)
+-- SELECT s.stu_name, c.course_name, c.course_instructor_name
+-- FROM StudentInfo s
+-- JOIN EnrollmentInfo e ON s.stu_id = e.stu_id
+-- JOIN CoursesInfo c ON e.course_id = c.course_id
+-- WHERE s.stu_id = 1 AND e.enroll_status = 'Enrolled';
+
+-- c) Retrieve course information
+-- SELECT * FROM CoursesInfo;
+
+-- d) Course info for specific course
+-- SELECT * FROM CoursesInfo WHERE course_id = 2;
+
+-- e) Course info for multiple courses
+-- SELECT * FROM CoursesInfo WHERE course_id IN (1,3);
+
+-- f) Reporting & analytics
+-- 1) number of students enrolled in each course
+-- SELECT c.course_id, c.course_name, COUNT(e.stu_id) AS enrolled_count
+-- FROM CoursesInfo c
+-- LEFT JOIN EnrollmentInfo e ON c.course_id = e.course_id AND e.enroll_status = 'Enrolled'
+-- GROUP BY c.course_id, c.course_name
+-- ORDER BY enrolled_count DESC;
+
+-- 2) list of students enrolled in a specific course (course_id = 2)
+-- SELECT c.course_name, s.stu_name
+-- FROM CoursesInfo c
+-- JOIN EnrollmentInfo e ON c.course_id = e.course_id
+-- JOIN StudentInfo s ON e.stu_id = s.stu_id
+-- WHERE c.course_id = 2 AND e.enroll_status = 'Enrolled';
+
+-- 3) count enrolled students per instructor
+-- SELECT c.course_instructor_name, COUNT(e.stu_id) AS total_enrolled
+-- FROM CoursesInfo c
+-- JOIN EnrollmentInfo e ON c.course_id = e.course_id AND e.enroll_status = 'Enrolled'
+-- GROUP BY c.course_instructor_name;
+
+-- 4) students enrolled in multiple courses
+-- SELECT s.stu_id, s.stu_name, COUNT(e.course_id) AS course_count
+-- FROM StudentInfo s
+-- JOIN EnrollmentInfo e ON s.stu_id = e.stu_id AND e.enroll_status = 'Enrolled'
+-- GROUP BY s.stu_id, s.stu_name
+-- HAVING COUNT(e.course_id) > 1;
+
